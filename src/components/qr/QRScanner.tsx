@@ -1,10 +1,12 @@
 import { Html5QrcodeScanner } from "html5-qrcode";
 import { useEffect } from "react";
+import { useAuthStore } from "@/store/authStore";
 import { scanQR } from "@/services/api";
 import { useDashboardStore } from "@/store/dashboardStore";
 import { toast } from "sonner";
 
 export default function QRScanner() {
+  const { user } = useAuthStore();
   const addAttendance = useDashboardStore((state) => state.addAttendance);
 
   useEffect(() => {
@@ -17,25 +19,30 @@ export default function QRScanner() {
 
     const onScanSuccess = async (decodedText: string) => {
       try {
-        // We can stop the scanner or just process the result
-        // To prevent multiple scans of the same code quickly, we use the service's feedback
-        const mealId = `meal-lunch-${new Date().toISOString().slice(0, 10)}`;
-        const res = await scanQR(decodedText, mealId);
+        if (!user?.id) {
+          console.error("No user logged in");
+          return;
+        }
+
+        // Use the Supabase client directly via the API utility function
+        const res = await scanQR(user.id, decodedText);
         
         if (res.success && res.attendance) {
+          toast.success(res.message);
           addAttendance(res.attendance);
-          toast.success("Attendance recorded!");
+        } else if (res.message.includes("Already scanned")) {
+          toast.info(res.message);
         } else {
-          toast.error(res.message || "Scan failed");
+          toast.error(res.message);
         }
       } catch (error) {
         console.error("Scan processing error:", error);
-        toast.error("Failed to process QR code");
+        toast.error("Failed to process scan. Please try again.");
       }
     };
 
     scanner.render(onScanSuccess, (error) => {
-      // Optional: handle scan error (occurs for every frame without a QR code)
+      // Optional: handle scan error
     });
 
     return () => {
@@ -43,7 +50,7 @@ export default function QRScanner() {
         console.error("Failed to clear scanner", error);
       });
     };
-  }, [addAttendance]);
+  }, [user, addAttendance]);
 
   return (
     <div className="w-full max-w-md mx-auto space-y-4">

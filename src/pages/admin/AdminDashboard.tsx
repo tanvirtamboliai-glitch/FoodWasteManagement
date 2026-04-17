@@ -22,7 +22,7 @@ export default function AdminDashboard() {
       const [attRes, prepRes, wasteRes] = await Promise.all([
         supabase.from("attendance").select("*").order("date", { ascending: true }),
         supabase.from("food_preparation").select("*").order("created_at", { ascending: true }),
-        supabase.from("waste").select("*").order("created_at", { ascending: true })
+        supabase.from("waste_entry").select("*").order("created_at", { ascending: true })
       ]);
 
       setAttendance(attRes.data || []);
@@ -52,7 +52,7 @@ export default function AdminDashboard() {
     }));
   }, [waste]);
 
-  const totalPrepared = useMemo(() => foodPrep.reduce((sum, item) => sum + (item.prepared_quantity || 0), 0), [foodPrep]);
+  const totalPrepared = useMemo(() => foodPrep.reduce((sum, item) => sum + (item.quantity || 0), 0), [foodPrep]);
   const totalLeftover = useMemo(() => waste.reduce((sum, item) => sum + (item.leftover_quantity || 0), 0), [waste]);
   const avgWastePercent = totalPrepared > 0 ? Math.round((totalLeftover / totalPrepared) * 100) : 0;
 

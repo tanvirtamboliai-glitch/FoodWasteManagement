@@ -1,5 +1,8 @@
 import { useState } from "react";
 import { supabase } from "../../services/supabase";
+import { submitFood, submitWaste } from "@/services/api";
+import { useAuthStore } from "@/store/authStore";
+import type { MealType } from "@/types";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -10,7 +13,8 @@ import { toast } from "sonner";
 import { Utensils, Trash2, Save, Loader2 } from "lucide-react";
 
 export default function StaffPanel() {
-    const [meal, setMeal] = useState("lunch");
+    const { user } = useAuthStore();
+    const [meal, setMeal] = useState<MealType>("lunch");
     const [prepared, setPrepared] = useState(0);
     const [leftover, setLeftover] = useState(0);
     const [isSavingFood, setIsSavingFood] = useState(false);
@@ -24,21 +28,20 @@ export default function StaffPanel() {
         }
         
         setIsSavingFood(true);
-        const { error } = await supabase
-            .from("food_preparation")
-            .insert([
-                {
-                    meal_type: meal,
-                    prepared_quantity: prepared
-                }
-            ]);
-
-        setIsSavingFood(false);
-        if (error) {
+        try {
+            await submitFood({
+                mealType: meal,
+                date: new Date().toISOString().slice(0, 10),
+                items: ["Regular Meal"], // Placeholder for items
+                quantity: prepared,
+                preparedBy: user?.name || "Staff",
+            });
+            toast.success(`${meal.charAt(0).toUpperCase() + meal.slice(1)} food data saved`);
+        } catch (error) {
             toast.error("Error saving food data");
             console.error(error);
-        } else {
-            toast.success(`${meal.charAt(0).toUpperCase() + meal.slice(1)} food data saved`);
+        } finally {
+            setIsSavingFood(false);
         }
     }
 
@@ -50,24 +53,19 @@ export default function StaffPanel() {
         }
         
         setIsSavingWaste(true);
-        const waste_percentage = (leftover / prepared) * 100;
-
-        const { error } = await supabase
-            .from("waste")
-            .insert([
-                {
-                    meal_type: meal,
-                    leftover_quantity: leftover,
-                    waste_percentage
-                }
-            ]);
-
-        setIsSavingWaste(false);
-        if (error) {
+        try {
+            await submitWaste({
+                mealType: meal,
+                preparedQuantity: prepared,
+                leftoverQuantity: leftover,
+                notes: "Daily waste record",
+            });
+            toast.success(`${meal.charAt(0).toUpperCase() + meal.slice(1)} waste data recorded`);
+        } catch (error) {
             toast.error("Error saving waste data");
             console.error(error);
-        } else {
-            toast.success(`${meal.charAt(0).toUpperCase() + meal.slice(1)} waste data recorded`);
+        } finally {
+            setIsSavingWaste(false);
         }
     }
 
@@ -96,7 +94,7 @@ export default function StaffPanel() {
                         <CardContent className="pt-6 space-y-6">
                             <div className="space-y-2">
                                 <Label htmlFor="meal-type">Meal Session</Label>
-                                <Select value={meal} onValueChange={setMeal}>
+                                <Select value={meal} onValueChange={(val) => setMeal(val as MealType)}>
                                     <SelectTrigger id="meal-type" className="rounded-xl">
                                         <SelectValue placeholder="Select meal" />
                                     </SelectTrigger>

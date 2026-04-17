@@ -1,14 +1,20 @@
 import { useEffect } from "react";
 import { useDashboardStore } from "@/store/dashboardStore";
+import { useAuthStore } from "@/store/authStore";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Loader2 } from "lucide-react";
 
 export default function HistoryPage() {
+  const { user } = useAuthStore();
   const { attendance, isLoading, loadData } = useDashboardStore();
 
-  useEffect(() => { loadData(); }, [loadData]);
+  useEffect(() => { 
+    if (user?.id) {
+      loadData(user.id); 
+    }
+  }, [loadData, user?.id]);
 
-  const myAttendance = attendance.filter((a) => a.studentId === "s1");
+  const myAttendance = attendance;
 
   return (
     <DashboardLayout>

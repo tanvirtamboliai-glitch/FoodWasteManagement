@@ -11,9 +11,13 @@ export default function StudentDashboard() {
   const { user } = useAuthStore();
   const { attendance, isLoading, loadData } = useDashboardStore();
 
-  useEffect(() => { loadData(); }, [loadData]);
+  useEffect(() => { 
+    if (user?.id) {
+      loadData(user.id); 
+    }
+  }, [loadData, user?.id]);
 
-  const myAttendance = attendance.filter((a) => a.studentId === "s1");
+  const myAttendance = attendance;
   const todayCount = myAttendance.filter((a) => a.date === new Date().toISOString().slice(0, 10)).length;
 
   return (

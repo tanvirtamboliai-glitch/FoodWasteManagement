@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useAuthStore } from "@/store/authStore";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,7 +8,7 @@ import { Leaf, Loader2 } from "lucide-react";
 import type { UserRole } from "@/types";
 
 export default function LoginPage() {
-  const { login, loginAs, isLoading } = useAuthStore();
+  const { login, isLoading } = useAuthStore();
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -22,10 +22,7 @@ export default function LoginPage() {
     }
   };
 
-  const handleQuickLogin = (role: UserRole) => {
-    loginAs(role);
-    navigate(`/${role}`);
-  };
+
 
   return (
     <div className="min-h-screen flex bg-background">
@@ -92,7 +89,15 @@ export default function LoginPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="password">Password</Label>
+                <Link 
+                  to="/forgot-password" 
+                  className="text-xs text-primary hover:underline font-medium"
+                >
+                  Forgot password?
+                </Link>
+              </div>
               <Input
                 id="password"
                 type="password"
@@ -108,27 +113,11 @@ export default function LoginPage() {
             </Button>
           </form>
 
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t border-border" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-background px-2 text-muted-foreground">Quick Demo Access</span>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-3 gap-2">
-            {(["student", "staff", "admin"] as const).map((role) => (
-              <Button
-                key={role}
-                variant="outline"
-                size="sm"
-                onClick={() => handleQuickLogin(role)}
-                className="capitalize text-xs"
-              >
-                {role}
-              </Button>
-            ))}
+          <div className="text-center text-sm pt-4">
+            <span className="text-muted-foreground">Don't have an account? </span>
+            <Link to="/signup" className="text-primary hover:underline font-medium">
+              Sign Up
+            </Link>
           </div>
         </div>
       </div>

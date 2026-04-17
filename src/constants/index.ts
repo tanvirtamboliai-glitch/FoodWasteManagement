@@ -13,9 +13,9 @@ export const MEAL_TIMES: Record<MealType, { start: string; end: string }> = {
 };
 
 export const DEMO_USERS = {
-  student: { id: "s1", name: "Alex Chen", email: "alex@university.edu", role: "student" as const },
-  staff: { id: "st1", name: "Maria Lopez", email: "maria@university.edu", role: "staff" as const },
-  admin: { id: "a1", name: "Dr. James Wilson", email: "james@university.edu", role: "admin" as const },
+  student: { id: "s1", name: "Alex Chen", email: "alex@university.edu", role: "student" as const, password: "student123" },
+  staff: { id: "st1", name: "Ram Gupta", email: "ram@university.edu", role: "staff" as const, password: "staff123" },
+  admin: { id: "a1", name: "Mr Tanvir Tambol", email: "tanvir@university.edu", role: "admin" as const, password: "admin123" },
 };
 
 export function getCurrentMeal(): Meal | null {

@@ -3,20 +3,28 @@ import QRScanner from "@/components/qr/QRScanner";
 import { isMealTime } from "@/constants";
 import { AlertCircle, History, User } from "lucide-react";
 import { useDashboardStore } from "@/store/dashboardStore";
+import { useAuthStore } from "@/store/authStore";
 import { format } from "date-fns";
 import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { supabase } from "@/services/supabase";
+import { useEffect } from "react";
 
 export default function ScanPage() {
+  const { user } = useAuthStore();
   const mealActive = isMealTime();
-  const attendance = useDashboardStore((state) => state.attendance);
+  const { attendance, loadData } = useDashboardStore();
 
-  // Get today's scans for the current user (mocking student s1)
+  useEffect(() => {
+    if (user?.id) {
+      loadData(user.id);
+    }
+  }, [user?.id, loadData]);
+
+  // Get today's scans for the current user
   const today = new Date().toISOString().slice(0, 10);
   const recentScans = attendance
-    .filter(a => a.date === today && a.studentId === "s1")
+    .filter(a => a.date === today && a.studentId === user?.id)
     .slice(0, 5);
 
   return (
